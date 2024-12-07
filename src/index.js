@@ -10,7 +10,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Configuração do PostgreSQL usando variável do Render
+// Log para debug
+console.log('DATABASE_URL:', process.env.DATABASE_URL);
+
+// Configuração atualizada do PostgreSQL
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
@@ -18,7 +21,18 @@ const pool = new Pool({
   }
 });
 
-// Criar tabela se não existir
+// Teste de conexão
+pool.connect((err, client, release) => {
+  if (err) {
+    console.error('Erro ao conectar ao banco:', err);
+    return;
+  }
+  console.log('✅ Conexão com o banco estabelecida com sucesso!');
+  release();
+});
+
+// Resto do código continua igual...
+
 const createTableQuery = `
   CREATE TABLE IF NOT EXISTS transactions (
     id SERIAL PRIMARY KEY,
@@ -33,6 +47,7 @@ const createTableQuery = `
 pool.query(createTableQuery)
   .then(() => console.log('✅ Tabela de transações criada/verificada com sucesso'))
   .catch(err => console.error('❌ Erro ao criar tabela:', err));
+
 
 // Rota de teste
 app.get('/', (req, res) => {
